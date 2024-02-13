@@ -1,0 +1,28 @@
+{
+    "name": "backend",
+    "version": "1.0.0",
+    "description": "back end",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js",
+        "dev": "nodemon index.js",
+        "test": "echo",
+        "build:ui": "rm -rf dist && cd ../part2/phonebook && npm run build && cp -r dist ../../part3/",
+        "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push",
+        "lint": "eslint ."
+    },
+    "author": "vlad",
+    "license": "ISC",
+    "dependencies": {
+        "cors": "^2.8.5",
+        "dotenv": "^16.4.1",
+        "express": "^4.18.2",
+        "mongoose": "^8.1.1",
+        "morgan": "^1.10.0"
+    },
+    "devDependencies": {
+        "eslint": "^8.56.0",
+        "eslint-config-xo": "^0.44.0",
+        "nodemon": "^3.0.3"
+    }
+}

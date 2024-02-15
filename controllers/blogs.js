@@ -1,4 +1,5 @@
 const blogRouter = require('express').Router()
+const { request, response } = require('../app')
 const Blog = require('../models/blog')
 
 blogRouter.get('/', async (request, response) => {
@@ -32,9 +33,9 @@ blogRouter.delete('/:id', async (request, response, next) => {
 })
 
 blogRouter.post('/', async (request, response, next) => {
-  const params  = request.body
-  const like = params.likes === null? 0 : params.likes
-  const blog = new Blog({title: params.title, author: params.author ,url: params.url ,likes : like})
+  const params = request.body
+  const like = params.likes === null ? 0 : params.likes
+  const blog = new Blog({ title: params.title, author: params.author, url: params.url, likes: like })
   try {
     const savedBlog = await blog.save()
     response.status(201).json(savedBlog)
@@ -42,6 +43,35 @@ blogRouter.post('/', async (request, response, next) => {
   catch (exception) {
     next(exception)
   }
+})
+
+blogRouter.put('/:id', async (req, res, next) => {
+  const blogUpdated = await Blog.findByIdAndUpdate(req.params.id, { title: req.body.title }, { new: true })
+  try {
+    if (blogUpdated) {
+      res.json(blogUpdated)
+    }
+    else {
+      res.status(404).end()
+    }
+  }
+  catch (exception) {
+    next(exception)
+  }
+
+})
+
+blogRouter.delete('/', async (request, response, next) => {
+  try {
+    const id = request.params.id
+    await Blog.findByIdAndDelete(id)
+    response.status(204).end()
+  }
+  catch (exception) {
+    next(exception)
+  }
+
+
 })
 
 module.exports = blogRouter

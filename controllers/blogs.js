@@ -53,14 +53,14 @@ blogRouter.delete('/:id', async (request, response, next) => {
 
 blogRouter.post('/', async (request, response, next) => {
   const params = request.body
- 
+
   if (!request.token) {
     return response.status(401).json({ error: 'token invalid' })
   }
- 
+
   // const anyUsers = await User.find({})
   const user = request.user
-  
+
   const like = params.likes === null ? 0 : params.likes
   const blog = new Blog({ title: params.title, author: params.author, url: params.url, likes: like, user: user._id })
   try {
@@ -95,17 +95,19 @@ blogRouter.delete('/', async (request, response, next) => {
     if (!request.token) {
       return response.status(401).json({ error: 'token invalid' })
     }
-    
+    // fix
     const blog = await Blog.findById(request.params.id)
-    if (blog.user.toString() === request.user.id.toString()) {
-      const id = request.params.id
-      console(id)
-      await Blog.findByIdAndDelete(id)
-      response.status(204).end()
-    }
-    else {
+    if (blog.user) {
+      if (blog.user.toString() === request.user.id.toString()) {
+        const id = request.params.id
 
-      response.status(400).json({ error: ' not deleted' })
+        await Blog.findByIdAndDelete(id)
+        response.status(204).end()
+      }
+      else {
+
+        response.status(400).json({ error: ' not deleted' })
+      }
     }
 
   }

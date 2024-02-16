@@ -7,7 +7,7 @@ const initialBlogs = [
     'url': 'http://localhost:3001/api/blogs/',
     'likes': 20,
     '_id': '65cb8d9c4919239c3029efdf',
-    'user' : null,
+    'user' : '65cf57ce8d0b4316a3a37a0c',
 },
 {
     'title': 'Demos2',
@@ -15,7 +15,7 @@ const initialBlogs = [
     'url': 'http://localhost:3001/api/blogs/',
     'likes': 5,
     '_id': '65cb8da44919239c3029efe1',
-    'user' : null,
+    'user' : '65cf57ce8d0b4316a3a37a0c'
 },
 {
     'title': 'Demos3',
@@ -23,7 +23,7 @@ const initialBlogs = [
     'url': 'http://localhost:3001/api/blogs/',
     'likes': 5,
     '_id': '65cb8da94919239c3029efe3',
-    'user' : null,
+    'user' : '65cf57ce8d0b4316a3a37a0c',
 }
 ]
 

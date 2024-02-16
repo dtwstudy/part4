@@ -9,7 +9,7 @@ require('dotenv').config()
 
 
 blogRouter.get('/', async (request, response) => {
-  console.log(request.body.token)
+
   const blogs = await Blog.find({}).populate('user', { username: 1, name: 1 })
   response.json(blogs)
 })
@@ -32,8 +32,20 @@ blogRouter.get('/:id', async (request, response, next) => {
 
 blogRouter.delete('/:id', async (request, response, next) => {
   try {
-    await Blog.findByIdAndDelete(request.params.id)
-    response.status(204).end()
+
+    const user = request.user
+    if (!request.token) {
+      return response.status(401).json({ error: 'token invalid' })
+    }
+    const blog = await Blog.findById(request.params.id)
+    if (blog.user.toString() === user.id.toString()) {
+      await Blog.findByIdAndDelete(request.params.id)
+      response.status(204).end()
+    }
+    else {
+      response.status(400).json({ 'error': 'userId different blogId' })
+    }
+
   } catch (exception) {
     next(exception)
   }
@@ -41,15 +53,15 @@ blogRouter.delete('/:id', async (request, response, next) => {
 
 blogRouter.post('/', async (request, response, next) => {
   const params = request.body
-  const decodedToken = jwt.verify(request.token, process.env.SECRET)
-  if (!decodedToken.id) {
+
+  if (!request.token) {
     return response.status(401).json({ error: 'token invalid' })
   }
   // const anyUsers = await User.find({})
-  const user = await User.findById(decodedToken.id)
+  const user = request.user
 
   const like = params.likes === null ? 0 : params.likes
-  const blog = new Blog({ title: params.title, author: params.author, url: params.url, likes: like , user:user._id})
+  const blog = new Blog({ title: params.title, author: params.author, url: params.url, likes: like, user: user._id })
   try {
     const savedBlog = await blog.save()
     user.blogs = user.blogs.concat(savedBlog._id)
@@ -79,9 +91,20 @@ blogRouter.put('/:id', async (req, res, next) => {
 
 blogRouter.delete('/', async (request, response, next) => {
   try {
-    const id = request.params.id
-    await Blog.findByIdAndDelete(id)
-    response.status(204).end()
+    if (!request.token) {
+      return response.status(401).json({ error: 'token invalid' })
+    }
+    const blog = await Blog.findById(request.params.id)
+    if (blog.user.toString() === request.user.id.toString()) {
+      const id = request.params.id
+      await Blog.findByIdAndDelete(id)
+      response.status(204).end()
+    }
+    else {
+
+      response.status(400).json({ error: ' not deleted' })
+    }
+
   }
   catch (exception) {
     next(exception)

@@ -10,18 +10,17 @@ describe('when there is initially one user in db', () => {
   beforeEach(async () => {
     await User.deleteMany({})
 
-    const passwordHash = await bcrypt.hash('sekret', 10)
+    const passwordHash = await bcrypt.hash('demo', 10)
     const user = new User({ username: 'root', passwordHash, name: 'test' })
-
     await user.save()
   })
 
-  test('creation fails with proper statuscode and message if username already taken', async () => {
+  test('create fails  if username already taken', async () => {
     const usersAtStart = await helper.usersInDb()
 
     const newUser = {
-      username: 'admin',
-      name: 'Superuser',
+      username: 'root',
+      name: 'nextUser',
       password: 'demo',
     }
 
@@ -35,5 +34,21 @@ describe('when there is initially one user in db', () => {
 
     const usersAtEnd = await helper.usersInDb()
     expect(usersAtEnd).toEqual(usersAtStart)
+  })
+
+  test('creation fails with proper statuscode', async () => {
+    const newUser2 = {
+      username: 'ad',
+      name: 'Invalid',
+      password: 'de',
+    }
+
+    const result = await api
+      .post('/api/users')
+      .send(newUser2)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    expect(result.body.error).toContain('password or username must be less than 3 symbol')
   })
 })

@@ -1,3 +1,4 @@
+const { request, response } = require('../app')
 const logger = require('./logger')
 
 const requestLogger = (request, response, next) => {
@@ -12,6 +13,18 @@ const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' })
 }
 
+const getTokenFrom = (request, response, next) => {
+  const authorization = request.get('authorization')
+  if (authorization && authorization.startsWith('Bearer ')) {
+    const token = authorization.replace('Bearer ', '')
+    request.token = token
+  }
+  else{
+    request.token = null
+  }
+ next()
+}
+
 const errorHandler = (error, request, response, next) => {
   logger.error(error.message)
 
@@ -20,7 +33,7 @@ const errorHandler = (error, request, response, next) => {
   } else if (error.name === 'ValidationError') {
     return response.status(400).json({ error: error.message })
   }
-  else if (error.name ===  'JsonWebTokenError') {
+  else if (error.name === 'JsonWebTokenError') {
     return response.status(401).json({ error: error.message })
   }
 
@@ -30,5 +43,6 @@ const errorHandler = (error, request, response, next) => {
 module.exports = {
   requestLogger,
   unknownEndpoint,
-  errorHandler
+  errorHandler,
+  getTokenFrom
 }

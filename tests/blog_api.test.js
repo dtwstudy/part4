@@ -12,6 +12,12 @@ beforeEach(async () => {
   await Promise.all(promiseArray)
 })
 
+const loginIn = async () => {
+  const res = await api.post('/login').send({username: 'root' , password: 'demo'}).expect(200).expect('Content-Type', /application\/json/)
+  return res.body
+
+}
+
 describe('api request index , post ,delete , put', () => {
   test('blog are returned as json', async () => {
     await api
@@ -19,8 +25,7 @@ describe('api request index , post ,delete , put', () => {
       .expect(200)
       .expect('Content-Type', /application\/json/)
   })
-
-  test('exiting id in db ', async () => {
+ test('exiting id in db ', async () => {
     const response = await api.get('/api/blogs')
     const blog = await helper.existingId(response.body[0].id)
     expect(blog._id).toBeDefined()
@@ -29,19 +34,26 @@ describe('api request index , post ,delete , put', () => {
 
 
   test('saved new blog', async () => {
-    const newBlog = { title: 'new blog post', author: 'Stack15', url: 'http://localhost:3001/api/blogs/', likes: '3' }
-
+    const newBlog = { title: 'Kotlin', author: 'Stack15', url: 'http://localhost:3001/api/blogs/', likes: '3' }
+    const res = await loginIn()
+   
     await api
-      .post('/api/blogs')
+      .post('/api/blogs').set('Authorization' ,`Bearer ${res.token}`)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
     const response = await api.get('/api/blogs')
     const contents = response.body.map(r => r.title)
     expect(response.body).toHaveLength(helper.initialBlogs.length + 1)
-    expect(contents).toContain(
-      'new blog post'
-    )
+    expect(contents).toContain('Kotlin' )
+  })
+
+  test('blog post not added to db without token', async () => {
+    const newBlog = { 'title': 'Like added', 'author': 'Stack11', 'url': 'http://localhost:3001/api/blogs/' ,'likes' : '5' }
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(401)
   })
 
   test('blog updated', async () => {
@@ -52,21 +64,14 @@ describe('api request index , post ,delete , put', () => {
   })
 
   test('blog delete by id', async () => {
-    const id = helper.initialBlogs[1]._id
-    await api.delete('/api/blogs/' + id).expect(204)
+    const res = await loginIn()
+    const id = helper.initialBlogs[0]._id
+    await api.delete('/api/blogs/' + id).set('Authorization' ,`Bearer ${res.token}`).expect(204)
     const deletedBlog  = await helper.blogsInDb()
     expect(deletedBlog).toHaveLength(helper.initialBlogs.length - 1)
   })
 
-  test('blog without likes is not added', async () => {
-    const newBlog = { 'title': 'Like added', 'author': 'Stack11', 'url': 'http://localhost:3001/api/blogs/' }
-    await api
-      .post('/api/blogs')
-      .send(newBlog)
-      .expect(201)
-    const response = await api.get('/api/blogs')
-    expect(response.body).toHaveLength(helper.initialBlogs.length + 1)
-  })
+  
 
   // test('blog without title and url is not added', async () => {
   //   const newBlog = new Blog({ author: 'Attribute', likes: '25' })

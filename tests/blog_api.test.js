@@ -6,6 +6,7 @@ const api = supertest(app)
 const Blog = require('../models/blog')
 
 beforeEach(async () => {
+  
   await Blog.deleteMany({})
   const blogObjects = helper.initialBlogs.map(blog => new Blog(blog))
   const promiseArray = blogObjects.map(blog => blog.save())
